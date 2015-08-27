@@ -1,16 +1,11 @@
 #include <pebble.h>
 
   
-// Recreation of the famous Tokyoflash Pimp Star Performer watch
-// 
-// TODO
-//  - Add PSP icons (including the famous Martini glass)
-  
 Window *my_window;
-TextLayer *h1[10], *h2[10], *m1[10], *m2[10], *background_layer;
+TextLayer *h1[10], *h2[10], *m1[10], *m2[10], *background_layer, *date_layer;
 static GFont s_hour_font;
 AppTimer *timer;
-const int delta = 250;
+const int delta = 300;
 int loopcounter = 0;
 int hquotient, mquotient = 0;
 int hrest, mrest         = 0;
@@ -40,7 +35,7 @@ void timer_callback(void *data) {
   text_layer_set_text_color(m2[randi],GColorBlue);
   
   //Register next execution
-  if (loopcounter < 5) {
+  if (loopcounter < 9) {
     timer = app_timer_register(delta, (AppTimerCallback) timer_callback, NULL);
   }
   else {
@@ -67,6 +62,8 @@ static void update_time() {
   srand((unsigned) time(&temp));
   static char hbuffer[] = "00";
   static char mbuffer[] = "00";
+  static char s_date_buffer[10];
+  static char s_vert_date[20];
   
   timer = app_timer_register(delta, (AppTimerCallback) timer_callback, NULL);
   loopcounter = 0;
@@ -94,6 +91,10 @@ static void update_time() {
   mrest       = minutes%10;
   //text_layer_set_text_color(m1[mquotient],GColList[mquotient]);
   //text_layer_set_text_color(m2[mrest],GColList[mrest]);
+  
+  // Display date on DateLayer
+  strftime(s_date_buffer, sizeof(s_date_buffer), "%a %d", tick_time);
+  text_layer_set_text(date_layer, s_date_buffer);
 }  
 
 
@@ -112,10 +113,10 @@ void handle_init(void) {
   text_layer_set_background_color(background_layer, GColorBlack);
   layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(background_layer));
   
-  //s_hour_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_CHECK_BOOK_12));
-  s_hour_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OCRA_EXTENDED_12));
+  s_hour_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_COMPUTER_24));
+  //s_hour_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OCRA_EXTENDED_18));
   for (i=0;i<10;i++) {
-    h1[i] = text_layer_create(GRect(24, 17*i, 24, 17));
+    h1[i] = text_layer_create(GRect(24, 16*i, 24, 28));
     text_layer_set_text_color(h1[i], GColorDarkGray);
     text_layer_set_background_color(h1[i],GColorClear);
     text_layer_set_text_alignment(h1[i], GTextAlignmentCenter);
@@ -123,7 +124,7 @@ void handle_init(void) {
     text_layer_set_font(h1[i], s_hour_font);
     layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(h1[i]));
     
-    h2[i] = text_layer_create(GRect(48, 17*i, 24, 17));
+    h2[i] = text_layer_create(GRect(48, 16*i, 24, 28));
     text_layer_set_text_color(h2[i], GColorDarkGray);
     text_layer_set_background_color(h2[i],GColorClear);
     text_layer_set_text_alignment(h2[i], GTextAlignmentCenter);
@@ -131,7 +132,7 @@ void handle_init(void) {
     text_layer_set_font(h2[i], s_hour_font);
     layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(h2[i]));
     
-    m1[i] = text_layer_create(GRect(72, 17*i, 24, 17));
+    m1[i] = text_layer_create(GRect(72, 16*i, 24, 28));
     text_layer_set_text_color(m1[i], GColorDarkGray);
     text_layer_set_background_color(m1[i],GColorClear);
     text_layer_set_text_alignment(m1[i], GTextAlignmentCenter);
@@ -139,7 +140,7 @@ void handle_init(void) {
     text_layer_set_font(m1[i], s_hour_font);
     layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(m1[i]));
     
-    m2[i] = text_layer_create(GRect(96, 17*i, 24, 17));
+    m2[i] = text_layer_create(GRect(96, 16*i, 24, 28));
     text_layer_set_text_color(m2[i], GColorDarkGray);
     text_layer_set_background_color(m2[i],GColorClear);
     text_layer_set_text_alignment(m2[i], GTextAlignmentCenter);
@@ -147,6 +148,13 @@ void handle_init(void) {
     text_layer_set_font(m2[i], s_hour_font);
     layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(m2[i]));
   }
+  
+  date_layer = text_layer_create(GRect(120,0,24,168));
+  text_layer_set_text_color(date_layer, GColorDarkGray);
+  text_layer_set_font(date_layer, s_hour_font);
+  text_layer_set_background_color(date_layer,GColorClear);
+  text_layer_set_text_alignment(date_layer, GTextAlignmentCenter);
+  //layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(date_layer));
   
   // Make sure the time is displayed from the start
   update_time();
@@ -163,6 +171,7 @@ void handle_deinit(void) {
     text_layer_destroy(h2[i]);
   }
   text_layer_destroy(background_layer);
+  text_layer_destroy(date_layer);
   app_timer_cancel(timer);
   window_destroy(my_window);
 }

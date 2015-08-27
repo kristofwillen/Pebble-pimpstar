@@ -10,14 +10,20 @@
         "media": [
             {
                 "characterRegex": "[0-9]",
-                "file": "fonts/OCRAEXT18.TTF",
-                "name": "FONT_OCRA_EXTENDED_18",
+                "file": "fonts/Computerfont.ttf",
+                "name": "FONT_COMPUTER_24",
                 "type": "font"
             },
             {
                 "characterRegex": "[0-9]",
-                "file": "fonts/CHECKBK0.TTF",
-                "name": "FONT_CHECK_BOOK_12",
+                "file": "fonts/COMPUTERRobot.ttf",
+                "name": "FONT_COMPUTER_ROBOT_24",
+                "type": "font"
+            },
+            {
+                "characterRegex": "[0-9]",
+                "file": "fonts/OCRAEXT18.TTF",
+                "name": "FONT_OCRA_EXTENDED_18",
                 "type": "font"
             },
             {
