@@ -1,0 +1,29 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        ""
+    ],
+    "companyName": "kristof.willen@gmail.com",
+    "longName": "Pimp Star",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "characterRegex": "[0-9]",
+                "file": "fonts/OCRAEXT.TTF",
+                "name": "FONT_OCRA_EXTENDED_12",
+                "type": "font"
+            }
+        ]
+    },
+    "sdkVersion": "3",
+    "shortName": "Pimp Star",
+    "targetPlatforms": [
+        "basalt"
+    ],
+    "uuid": "17768951-99c3-4e30-8990-42dfe11e3781",
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": true
+    }
+}
