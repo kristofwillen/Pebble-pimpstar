@@ -4,35 +4,72 @@
 // Recreation of the famous Tokyoflash Pimp Star Performer watch
 // 
 // TODO
-//  - Add animations
 //  - Add PSP icons (including the famous Martini glass)
-  
   
 Window *my_window;
 TextLayer *h1[10], *h2[10], *m1[10], *m2[10], *background_layer;
 static GFont s_hour_font;
+AppTimer *timer;
+const int delta = 250;
+int loopcounter = 0;
+int hquotient, mquotient = 0;
+int hrest, mrest         = 0;
+
+
+void timer_callback(void *data) {
+ 
+  int randi = rand()%10;
+  GColor GColList[10];
+  GColList[0] = GColorVividCerulean;  // BLUE
+  GColList[1] = GColorYellow;         // YELLOW
+  GColList[2] = GColorGreen;          // GREEN
+  GColList[3] = GColorRed;            // RED
+  GColList[4] = GColorMagenta;        // VIOLET
+  GColList[5] = GColorChromeYellow;   // ORANGE
+  GColList[6] = GColorCyan;           // BLUE
+  GColList[7] = GColorGreen;          // GREEN
+  GColList[8] = GColorFashionMagenta; // VIOLET  
+  GColList[9] = GColorFolly;          // RED
+  
+  text_layer_set_text_color(h1[randi],GColorBlue);
+  randi = rand()%10;
+  text_layer_set_text_color(h2[randi],GColorBlue);
+  randi = rand()%10;
+  text_layer_set_text_color(m1[randi],GColorBlue);
+  randi = rand()%10;
+  text_layer_set_text_color(m2[randi],GColorBlue);
+  
+  //Register next execution
+  if (loopcounter < 5) {
+    timer = app_timer_register(delta, (AppTimerCallback) timer_callback, NULL);
+  }
+  else {
+    for (int i=0;i<10;i++) {
+      text_layer_set_text_color(h1[i], GColorDarkGray);
+      text_layer_set_text_color(h2[i], GColorDarkGray);
+      text_layer_set_text_color(m1[i], GColorDarkGray);
+      text_layer_set_text_color(m2[i], GColorDarkGray);
+      
+      text_layer_set_text_color(h1[hquotient],GColList[hquotient]);
+      text_layer_set_text_color(h2[hrest],GColList[hrest]);
+      text_layer_set_text_color(m1[mquotient],GColList[mquotient]);
+      text_layer_set_text_color(m2[mrest],GColList[mrest]);
+    }   
+  } 
+  loopcounter = loopcounter + 1;
+}
 
 
 static void update_time() {
   // Get a tm structure
   time_t temp = time(NULL); 
   struct tm *tick_time = localtime(&temp);
+  srand((unsigned) time(&temp));
   static char hbuffer[] = "00";
   static char mbuffer[] = "00";
-  GColor GColList[10];
   
-  
-  GColList[0] = GColorBlue;           // BLUE
-  GColList[1] = GColorYellow;         // YELLOW
-  GColList[2] = GColorGreen;          // GREEN
-  GColList[3] = GColorRed;            // RED
-  GColList[4] = GColorVividViolet;    // VIOLET
-  GColList[5] = GColorChromeYellow;   // ORANGE
-  GColList[6] = GColorCyan;           // BLUE
-  GColList[7] = GColorBlue;           // BLUE
-  GColList[8] = GColorFashionMagenta; // VIOLET  
-  GColList[9] = GColorFolly;          // RED
-  
+  timer = app_timer_register(delta, (AppTimerCallback) timer_callback, NULL);
+  loopcounter = 0;
   
   for (int i=0;i<10;i++) {
     text_layer_set_text_color(h1[i], GColorDarkGray);
@@ -44,46 +81,19 @@ static void update_time() {
   // Write the current hours and minutes into the buffer
   if(clock_is_24h_style() == true) { strftime(hbuffer, sizeof("00"), "%H", tick_time); } 
   else { strftime(hbuffer, sizeof("00"), "%I", tick_time); }
-  
   strftime(mbuffer, sizeof("00"), "%M", tick_time);
   
   int hour  = atoi(hbuffer);
-  int quotient  = hour/10;
-  //int oldquot   = (quotient - 1)%10;
-  int remainder = hour%10;
-  //int oldrem    = (remainder - 1)%10;
+  hquotient = hour/10;
+  hrest     = hour%10;
+  //text_layer_set_text_color(h1[hquotient],GColList[hquotient]);
+  //text_layer_set_text_color(h2[hrest],GColList[hrest]);
   
-  //static char h1text[] = "0";
-  //snprintf(h1text, sizeof(h1text), "%d", quotient);
-  //text_layer_set_text_color(h1[oldquot],GColorLightGray);
-  text_layer_set_text_color(h1[quotient],GColList[quotient]);
-  //text_layer_set_text(h1[quotient], h1text);
-  
-  //static char h2text[] = "0";
-  //snprintf(h2text, sizeof(h2text), "%d", remainder);
-  //text_layer_set_text_color(h1[oldrem],GColorLightGray);
-  text_layer_set_text_color(h2[remainder],GColList[remainder]);
-  //text_layer_set_text(h2[remainder], h2text);
-  
-  int minutes   = atoi(mbuffer);
-  quotient  = minutes/10;
-  //oldquot   = (quotient - 1)%10;
-  remainder = minutes%10;
-  //oldrem    = (remainder - 1)%10;
-  
-  //static char m1text[] = "0";
-  //snprintf(m1text, sizeof(m1text), "%i", quotient);
-  //text_layer_set_text_color(m1[oldquot],GColorLightGray);
-  text_layer_set_text_color(m1[quotient],GColList[quotient]);
-  //text_layer_set_text(m1[quotient], m1text);
-  
-  //static char m2text[] = "0";
-  //snprintf(m2text, sizeof(m2text), "%d", remainder);
-  //text_layer_set_text_color(m2[oldrem],GColorLightGray);
-  text_layer_set_text_color(m2[remainder],GColList[remainder]);
-  //text_layer_set_text(m2[remainder], m2text);
-  
-
+  int minutes = atoi(mbuffer);
+  mquotient   = minutes/10;
+  mrest       = minutes%10;
+  //text_layer_set_text_color(m1[mquotient],GColList[mquotient]);
+  //text_layer_set_text_color(m2[mrest],GColList[mrest]);
 }  
 
 
@@ -153,6 +163,7 @@ void handle_deinit(void) {
     text_layer_destroy(h2[i]);
   }
   text_layer_destroy(background_layer);
+  app_timer_cancel(timer);
   window_destroy(my_window);
 }
 
