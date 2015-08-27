@@ -10,6 +10,12 @@
         "media": [
             {
                 "characterRegex": "[0-9]",
+                "file": "fonts/CHECKBK0.TTF",
+                "name": "FONT_CHECK_BOOK_12",
+                "type": "font"
+            },
+            {
+                "characterRegex": "[0-9]",
                 "file": "fonts/OCRAEXT.TTF",
                 "name": "FONT_OCRA_EXTENDED_12",
                 "type": "font"
