@@ -9,6 +9,7 @@ const int delta = 300;
 int loopcounter = 0;
 int hquotient, mquotient = 0;
 int hrest, mrest         = 0;
+static int batteryLevel = 100;
 
 
 void timer_callback(void *data) {
@@ -89,23 +90,34 @@ static void update_time() {
   int hour  = atoi(hbuffer);
   hquotient = hour/10;
   hrest     = hour%10;
-  //text_layer_set_text_color(h1[hquotient],GColList[hquotient]);
-  //text_layer_set_text_color(h2[hrest],GColList[hrest]);
-  
   int minutes = atoi(mbuffer);
   mquotient   = minutes/10;
   mrest       = minutes%10;
-  //text_layer_set_text_color(m1[mquotient],GColList[mquotient]);
-  //text_layer_set_text_color(m2[mrest],GColList[mrest]);
   
   // Display date on DateLayer
   strftime(s_date_buffer, sizeof(s_date_buffer), "%a %d", tick_time);
   text_layer_set_text(date_layer, s_date_buffer);
+  
+  if (batteryLevel <= 20) { text_layer_set_text_color(battery_layer, GColorRed); }
+  else  {
+    if (batteryLevel <= 50) { text_layer_set_text_color(battery_layer, GColorPastelYellow); }
+    else {
+       if (batteryLevel <= 80) { text_layer_set_text_color(battery_layer, GColorBlueMoon); }
+       else { text_layer_set_text_color(battery_layer, GColorDarkGray); }
+    }
+  }
 }  
+
 
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   update_time();
+}
+
+
+
+static void battery_handler(BatteryChargeState new_state) {
+  batteryLevel = (int)new_state.charge_percent;
 }
 
 
@@ -183,6 +195,10 @@ void handle_init(void) {
   update_time();
   
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
+  
+  // Get the current battery level
+  battery_handler(battery_state_service_peek());
+  
   window_stack_push(my_window, true);
 }
 
