@@ -9,15 +9,21 @@
     "resources": {
         "media": [
             {
-                "characterRegex": "[0-9]",
-                "file": "fonts/Computerfont.ttf",
-                "name": "FONT_COMPUTER_24",
+                "characterRegex": "r",
+                "file": "fonts/Smartphone Icons.ttf",
+                "name": "FONT_SMARTPHONE_ICONS_24",
+                "type": "font"
+            },
+            {
+                "characterRegex": "m",
+                "file": "fonts/Alcohol.ttf",
+                "name": "FONT_ALCOHOL_24",
                 "type": "font"
             },
             {
                 "characterRegex": "[0-9]",
-                "file": "fonts/COMPUTERRobot.ttf",
-                "name": "FONT_COMPUTER_ROBOT_24",
+                "file": "fonts/Computerfont.ttf",
+                "name": "FONT_COMPUTER_24",
                 "type": "font"
             },
             {

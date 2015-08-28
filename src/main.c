@@ -2,8 +2,8 @@
 
   
 Window *my_window;
-TextLayer *h1[10], *h2[10], *m1[10], *m2[10], *background_layer, *date_layer;
-static GFont s_hour_font;
+TextLayer *h1[10], *h2[10], *m1[10], *m2[10], *background_layer, *date_layer, *battery_layer, *am_layer;
+static GFont s_hour_font, s_battery_font, s_am_font;
 AppTimer *timer;
 const int delta = 300;
 int loopcounter = 0;
@@ -62,23 +62,29 @@ static void update_time() {
   srand((unsigned) time(&temp));
   static char hbuffer[] = "00";
   static char mbuffer[] = "00";
+  static char pbuffer[] = "00";
   static char s_date_buffer[10];
-  static char s_vert_date[20];
+  //static char s_vert_date[20];
   
   timer = app_timer_register(delta, (AppTimerCallback) timer_callback, NULL);
   loopcounter = 0;
   
   for (int i=0;i<10;i++) {
-    text_layer_set_text_color(h1[i], GColorDarkGray);
-    text_layer_set_text_color(h2[i], GColorDarkGray);
-    text_layer_set_text_color(m1[i], GColorDarkGray);
-    text_layer_set_text_color(m2[i], GColorDarkGray);
+    text_layer_set_text_color(h1[i], GColorLightGray);
+    text_layer_set_text_color(h2[i], GColorLightGray);
+    text_layer_set_text_color(m1[i], GColorLightGray);
+    text_layer_set_text_color(m2[i], GColorLightGray);
   }
   
   // Write the current hours and minutes into the buffer
   if(clock_is_24h_style() == true) { strftime(hbuffer, sizeof("00"), "%H", tick_time); } 
   else { strftime(hbuffer, sizeof("00"), "%I", tick_time); }
   strftime(mbuffer, sizeof("00"), "%M", tick_time);
+  
+  strftime(pbuffer, sizeof("00"),"%H", tick_time);
+  int phour = atoi(pbuffer);
+  if (phour <= 12) { text_layer_set_text_color(am_layer, GColorDarkGray); }
+  else { text_layer_set_text_color(am_layer, GColorSunsetOrange); }
   
   int hour  = atoi(hbuffer);
   hquotient = hour/10;
@@ -107,6 +113,7 @@ void handle_init(void) {
   my_window = window_create();
 
   int i=0;
+  int ypos = 0;
   static char *buffer[] = {"0","1","2","3","4","5","6","7","8","9"};  
   
   background_layer = text_layer_create(GRect(0,0,144,168));
@@ -116,32 +123,29 @@ void handle_init(void) {
   s_hour_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_COMPUTER_24));
   //s_hour_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OCRA_EXTENDED_18));
   for (i=0;i<10;i++) {
-    h1[i] = text_layer_create(GRect(24, 16*i, 24, 28));
-    text_layer_set_text_color(h1[i], GColorDarkGray);
+    ypos = 16*i-5;
+    h1[i] = text_layer_create(GRect(24, ypos, 24, 28));
     text_layer_set_background_color(h1[i],GColorClear);
     text_layer_set_text_alignment(h1[i], GTextAlignmentCenter);
     text_layer_set_text(h1[i], buffer[i]);
     text_layer_set_font(h1[i], s_hour_font);
     layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(h1[i]));
     
-    h2[i] = text_layer_create(GRect(48, 16*i, 24, 28));
-    text_layer_set_text_color(h2[i], GColorDarkGray);
+    h2[i] = text_layer_create(GRect(48, ypos, 24, 28));
     text_layer_set_background_color(h2[i],GColorClear);
     text_layer_set_text_alignment(h2[i], GTextAlignmentCenter);
     text_layer_set_text(h2[i], buffer[i]);
     text_layer_set_font(h2[i], s_hour_font);
     layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(h2[i]));
     
-    m1[i] = text_layer_create(GRect(72, 16*i, 24, 28));
-    text_layer_set_text_color(m1[i], GColorDarkGray);
+    m1[i] = text_layer_create(GRect(72, ypos, 24, 28));
     text_layer_set_background_color(m1[i],GColorClear);
     text_layer_set_text_alignment(m1[i], GTextAlignmentCenter);
     text_layer_set_text(m1[i], buffer[i]);
     text_layer_set_font(m1[i], s_hour_font);
     layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(m1[i]));
     
-    m2[i] = text_layer_create(GRect(96, 16*i, 24, 28));
-    text_layer_set_text_color(m2[i], GColorDarkGray);
+    m2[i] = text_layer_create(GRect(96, ypos, 24, 28));
     text_layer_set_background_color(m2[i],GColorClear);
     text_layer_set_text_alignment(m2[i], GTextAlignmentCenter);
     text_layer_set_text(m2[i], buffer[i]);
@@ -149,12 +153,31 @@ void handle_init(void) {
     layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(m2[i]));
   }
   
-  date_layer = text_layer_create(GRect(120,0,24,168));
+  date_layer = text_layer_create(GRect(120,84,24,84));
   text_layer_set_text_color(date_layer, GColorDarkGray);
   text_layer_set_font(date_layer, s_hour_font);
   text_layer_set_background_color(date_layer,GColorClear);
   text_layer_set_text_alignment(date_layer, GTextAlignmentCenter);
   //layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(date_layer));
+  
+  battery_layer = text_layer_create(GRect(120,40,24,34));
+  s_battery_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_SMARTPHONE_ICONS_24));
+  text_layer_set_text_color(battery_layer, GColorDarkGray);
+  text_layer_set_font(battery_layer, s_battery_font);
+  text_layer_set_text(battery_layer, "r");
+  text_layer_set_background_color(battery_layer,GColorClear);
+  text_layer_set_text_alignment(battery_layer, GTextAlignmentCenter);
+  layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(battery_layer));
+  
+  
+  am_layer = text_layer_create(GRect(120,70,24,34));
+  s_am_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ALCOHOL_24));
+  text_layer_set_text_color(am_layer, GColorDarkGray);
+  text_layer_set_font(am_layer, s_am_font);
+  text_layer_set_text(am_layer, "m");
+  text_layer_set_background_color(am_layer,GColorClear);
+  text_layer_set_text_alignment(am_layer, GTextAlignmentCenter);
+  layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(am_layer));
   
   // Make sure the time is displayed from the start
   update_time();
@@ -172,6 +195,8 @@ void handle_deinit(void) {
   }
   text_layer_destroy(background_layer);
   text_layer_destroy(date_layer);
+  text_layer_destroy(battery_layer);
+  text_layer_destroy(am_layer);
   app_timer_cancel(timer);
   window_destroy(my_window);
 }
