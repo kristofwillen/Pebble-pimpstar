@@ -2,7 +2,7 @@
 
   
 Window *my_window;
-TextLayer *h1[10], *h2[10], *m1[10], *m2[10], *background_layer, *date_layer, *battery_layer, *am_layer;
+TextLayer *h1[10], *h2[10], *m1[10], *m2[10], *background_layer, *battery_layer, *am_layer, *date1_layer, *date2_layer;
 static GFont s_hour_font, s_battery_font, s_am_font;
 AppTimer *timer;
 const int delta = 300;
@@ -56,6 +56,12 @@ void timer_callback(void *data) {
 }
 
 
+
+static void battery_handler(BatteryChargeState new_state) {
+  batteryLevel = (int)new_state.charge_percent;
+}
+
+
 static void update_time() {
   // Get a tm structure
   time_t temp = time(NULL); 
@@ -64,8 +70,9 @@ static void update_time() {
   static char hbuffer[] = "00";
   static char mbuffer[] = "00";
   static char pbuffer[] = "00";
-  static char s_date_buffer[10];
-  //static char s_vert_date[20];
+  static char dbuffer[]=  "00";
+  static char d1str[] = "0";
+  static char d2str[] = "0";
   
   timer = app_timer_register(delta, (AppTimerCallback) timer_callback, NULL);
   loopcounter = 0;
@@ -82,6 +89,7 @@ static void update_time() {
   else { strftime(hbuffer, sizeof("00"), "%I", tick_time); }
   strftime(mbuffer, sizeof("00"), "%M", tick_time);
   
+  // The Martini glass...
   strftime(pbuffer, sizeof("00"),"%H", tick_time);
   int phour = atoi(pbuffer);
   if (phour <= 12) { text_layer_set_text_color(am_layer, GColorDarkGray); }
@@ -95,14 +103,25 @@ static void update_time() {
   mrest       = minutes%10;
   
   // Display date on DateLayer
-  strftime(s_date_buffer, sizeof(s_date_buffer), "%a %d", tick_time);
-  text_layer_set_text(date_layer, s_date_buffer);
+  strftime(dbuffer, sizeof(dbuffer), "%d", tick_time);
+  int iday = atoi(dbuffer);
+  int dquot = iday/10;
+  int drem  = iday%10;
+  snprintf(d1str, sizeof(d1str), "%d", dquot);
+  snprintf(d2str, sizeof(d2str), "%d", drem);
+  text_layer_set_text(date1_layer, d1str);
+  text_layer_set_text(date2_layer, d2str);
   
-  if (batteryLevel <= 20) { text_layer_set_text_color(battery_layer, GColorRed); }
+  // battery icon color
+  // TODO - check less for battery state ! Now 10 minutes !
+  if (mquotient == 0) { 
+    battery_handler(battery_state_service_peek());
+  }
+  if (batteryLevel <= 20) { text_layer_set_text_color(battery_layer, GColorSunsetOrange); }
   else  {
-    if (batteryLevel <= 50) { text_layer_set_text_color(battery_layer, GColorPastelYellow); }
+    if (batteryLevel <= 40) { text_layer_set_text_color(battery_layer, GColorPastelYellow); }
     else {
-       if (batteryLevel <= 80) { text_layer_set_text_color(battery_layer, GColorBlueMoon); }
+       if (batteryLevel <= 60) { text_layer_set_text_color(battery_layer, GColorVividCerulean); }
        else { text_layer_set_text_color(battery_layer, GColorDarkGray); }
     }
   }
@@ -112,12 +131,6 @@ static void update_time() {
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   update_time();
-}
-
-
-
-static void battery_handler(BatteryChargeState new_state) {
-  batteryLevel = (int)new_state.charge_percent;
 }
 
 
@@ -165,14 +178,8 @@ void handle_init(void) {
     layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(m2[i]));
   }
   
-  date_layer = text_layer_create(GRect(120,84,24,84));
-  text_layer_set_text_color(date_layer, GColorDarkGray);
-  text_layer_set_font(date_layer, s_hour_font);
-  text_layer_set_background_color(date_layer,GColorClear);
-  text_layer_set_text_alignment(date_layer, GTextAlignmentCenter);
-  //layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(date_layer));
   
-  battery_layer = text_layer_create(GRect(120,40,24,34));
+  battery_layer = text_layer_create(GRect(0,-3,24,34));
   s_battery_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_SMARTPHONE_ICONS_24));
   text_layer_set_text_color(battery_layer, GColorDarkGray);
   text_layer_set_font(battery_layer, s_battery_font);
@@ -182,7 +189,7 @@ void handle_init(void) {
   layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(battery_layer));
   
   
-  am_layer = text_layer_create(GRect(120,70,24,34));
+  am_layer = text_layer_create(GRect(120,-3,24,34));
   s_am_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ALCOHOL_24));
   text_layer_set_text_color(am_layer, GColorDarkGray);
   text_layer_set_font(am_layer, s_am_font);
@@ -190,6 +197,22 @@ void handle_init(void) {
   text_layer_set_background_color(am_layer,GColorClear);
   text_layer_set_text_alignment(am_layer, GTextAlignmentCenter);
   layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(am_layer));
+  
+  date1_layer = text_layer_create(GRect(120,59,24,34));
+  text_layer_set_text_color(date1_layer, GColorDarkGray);
+  text_layer_set_font(date1_layer, s_hour_font);
+  text_layer_set_text(date1_layer, "0");
+  text_layer_set_background_color(date1_layer,GColorClear);
+  text_layer_set_text_alignment(date1_layer, GTextAlignmentCenter);
+  layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(date1_layer));
+  
+  date2_layer = text_layer_create(GRect(120,75,24,34));
+  text_layer_set_text_color(date2_layer, GColorDarkGray);
+  text_layer_set_font(date2_layer, s_hour_font);
+  text_layer_set_text(date2_layer, "0");
+  text_layer_set_background_color(date2_layer,GColorClear);
+  text_layer_set_text_alignment(date2_layer, GTextAlignmentCenter);
+  layer_add_child(window_get_root_layer(my_window), text_layer_get_layer(date2_layer));
   
   // Make sure the time is displayed from the start
   update_time();
@@ -210,7 +233,8 @@ void handle_deinit(void) {
     text_layer_destroy(h2[i]);
   }
   text_layer_destroy(background_layer);
-  text_layer_destroy(date_layer);
+  text_layer_destroy(date1_layer);
+  text_layer_destroy(date2_layer);
   text_layer_destroy(battery_layer);
   text_layer_destroy(am_layer);
   app_timer_cancel(timer);
